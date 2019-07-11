@@ -1,0 +1,54 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# "GOOG.csv" is Alphabet's Closing Rates of 2018-2019 july
+# Downloaded from Yahoo Finance
+
+
+def getdataset(dataset):            # Returns a list of closing Rates
+    # Reading DataSet
+    dataframe = pd.read_csv(dataset)
+    dates = dataframe.iloc[:,0].values
+    closing = dataframe.iloc[:, 4].values
+    return closing, dates
+
+
+def SMA(dataset, Swindow, Lwindow):
+    Shortwindow = np.ones(Swindow) / Swindow
+    longwindow = np.ones(Lwindow) / Lwindow
+    L = np.convolve(dataset, longwindow, 'valid')
+    S = np.convolve(dataset, Shortwindow, 'valid')
+    return L, S
+
+
+swindow = 50
+lwindow = 200
+
+f , rem= getdataset("GOOG(2).csv")
+Long , Short = SMA(f, swindow , lwindow)
+y = np.zeros(lwindow - 1)+f[0]
+Long = np.concatenate([y , Long])
+Short = np.concatenate([np.zeros(swindow -1 )+f[0], Short])
+
+x = Long < Short
+m = f[0]
+for i in range(len(f)):
+    if not x[i]:
+        f[i]=m
+    else:
+        m = f[i]
+
+plt.title("Alphabet's Closing Prices and SMA Crossover")
+plt.xlabel("Years")
+plt.ylabel("Closing Prices")
+xz =np.linspace(2010 , 2019 , 10)
+print(xz)
+
+plt.plot(f, label = "Actual Closing Prices")
+plt.plot(Long, label = "Long Window")
+plt.plot(Short, label = "Short Window")
+plt.legend(loc='upper left')
+plt.show()
+
+
